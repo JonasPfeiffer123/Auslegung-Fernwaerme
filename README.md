@@ -18,9 +18,12 @@ Notwendige Bibliotheken:
 - customtkinter
 - tkinter
 
+Die Erzeugerauslegung funktioniert nach Einschätzung des Verfassers
+
 Aktuelle ToDos:
+- Wirtschaftlichkeitsberechnungen optimieren und erweitern (derzeitig ohne Förderung, Kapitalzins, Preissteigerung)
+  Weiterhin muss das "Bepreisungssystem" für Strom aus BHKW und in WP angepasst werden. Aktuell wird ein Strompreis definiert, zu dem das BHKW den gesamten Strom "verkaufen"     kann. Dadurch werden beim BHKW verhältnismäßig niedrige Wärmegestehungskosten erreicht. Der gleiche Strompreis wird für den Verbrauch durch die Wärmepumpen angesetzt. Hier     wird noch Literaturrecherche nötig sein.
 - Erweiterung Funktionalität Solarthermieberechnung auf Umfang Excel-Tool
 - weitere Erzeugertechnologien implementieren
-- Wirtschaftlichkeitsberechnungen optimieren und erweitern (derzeitig ohne Förderung, Kapitalzins, Preissteigerung)
 - Optimierung Zusammenspiel Erzeuger
 - Überarbeitung der Struktur (gegebenenfalls Funktionen/Codeabschnitte auslagern, insgesamt Optimierung)
