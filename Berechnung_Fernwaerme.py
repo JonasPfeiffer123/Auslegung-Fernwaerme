@@ -520,7 +520,7 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
 tech_order = ["Solarthermie", "Geothermie", "BHKW", "Biomassekessel", "Gaskessel"]
 
 # Berechnung_Erzeugermix(Fläche STA, Volumen Speicher, Typ STA, Fläche Erdsondenfeld, Tiefe Erdsondenbohrung, Einschaltpunkt GK, Gaspreis, Strompreis, Holzpreis, Dateiname, tech_order, Leistung BHKW)
-# Berechnung_Erzeugermix(600, 20, "Flachkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order, 80)
+Berechnung_Erzeugermix(600, 20, "Flachkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order, 80)
 
 def Optimierung_Erzeugermix():
     tech_order = ["Solarthermie", "Geothermie", "Holzgas-BHKW", "Biomassekessel", "Gaskessel"]
@@ -538,4 +538,4 @@ def Optimierung_Erzeugermix():
     plt.show()
 
 
-Optimierung_Erzeugermix()
+# Optimierung_Erzeugermix()
