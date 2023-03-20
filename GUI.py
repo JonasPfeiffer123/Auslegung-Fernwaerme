@@ -15,10 +15,12 @@ def GUI():
         Gaspreis = float(slider6.get())
         Strompreis = float(slider7.get())
         Holzpreis = float(slider8.get())
+        el_Leistung_BHKW = float(slider9.get())
 
         tech_order = ["Solarthermie", "Geothermie", "BHKW", "Biomassekessel", "Gaskessel"]
 
-        result = Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_GK, Gaspreis, Strompreis, Holzpreis, filename, tech_order)
+        result = Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_GK, Gaspreis, Strompreis,
+                                        Holzpreis, filename, tech_order, el_Leistung_BHKW)
         result_label.config(text=f"Wärmegestehungskosten: {result:.2f}")
 
     def update_label(*args):
@@ -30,6 +32,7 @@ def GUI():
         label6.config(text=str(var6.get()))
         label7.config(text=str(var7.get()))
         label8.config(text=str(var8.get()))
+        label9.config(text=str(var9.get()))
 
     root = tk.Tk()
     root.title("Optimierung WGK")
@@ -42,6 +45,7 @@ def GUI():
     var6 = tk.DoubleVar(root)
     var7 = tk.DoubleVar(root)
     var8 = tk.DoubleVar(root)
+    var9 = tk.DoubleVar(root)
 
     var1.set(1000)
     var2.set(50)
@@ -51,6 +55,7 @@ def GUI():
     var6.set(100)
     var7.set(300)
     var8.set(75)
+    var9.set(40)
 
     var1.trace("w", update_label)
     var2.trace("w", update_label)
@@ -60,6 +65,7 @@ def GUI():
     var6.trace("w", update_label)
     var7.trace("w", update_label)
     var8.trace("w", update_label)
+    var9.trace("w", update_label)
 
     label_Daten = tk.Label(root, text="CSV-Dateiname mit den Daten")
     label_Daten.pack()
@@ -126,6 +132,13 @@ def GUI():
     slider8.pack()
     label8 = tk.Label(root, text="")
     label8.pack()
+
+    label_BHKW = tk.Label(root, text="elektrische Leistung BHKW")
+    label_BHKW.pack()
+    slider9 = ctkSlider(root, from_=0, to=1000, variable=var9)
+    slider9.pack()
+    label9 = tk.Label(root, text="")
+    label9.pack()
 
     submit_button = tk.Button(root, text="Berechne", command=submit)
     submit_button.pack()
