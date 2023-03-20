@@ -1,4 +1,4 @@
-# Berechnungsprogramm Fernwärme-Erzeugerauslegung
+# Ertragsberechnungsprogramm Solarthermie in Wärmenetz (Berechnungsgrundlage: ScenoCalc Fernwärme 2.0 https://www.scfw.de/)
 
 # Import Bibliotheken
 from math import pi, exp, log, sqrt
