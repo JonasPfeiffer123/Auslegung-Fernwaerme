@@ -119,15 +119,13 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
         return 0, 0, 0, 0
     # statische Vorgabewerte
     # Location = "Bautzen"
+    # muss aus der CSV kommen
     Longitude = -14.4222
     STD_Longitude = -15
     Latitude = 51.1676
 
     Albedo = 0.2
     wcorr = 0.5
-
-    # Typ = "Flachkollektor"
-    # Typ = "Röhrenkollektor"
 
     if Typ == "Flachkollektor":
         # Vorgabewerte Flachkollektor Vitosol 200-F XL13
@@ -183,7 +181,6 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
     D47 = D46 / KR_E / 2
     L_Erdreich = 2
     D49 = 0.8
-    # D50 = 2 * (Drbin_E + 2 * D47)
     D51 = L_Erdreich / D46 * log((Drbin_E / 2 + D47) / (Drbin_E / 2))
     D52 = log(2 * D49 / (Drbin_E / 2 + D47)) + D51 + log(sqrt(1 + (D49 / Drbin_E) ** 2))
     hs_RE = 1 / D52
@@ -222,12 +219,10 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
 
     Zähler = 0
 
-    Kollektorfeldertrag_ges = 0
-
-    #for Jahresstunden, Stunde, Tag_des_Jahres, Einstrahlung_hori, Temperatur, Windgeschwindigkeit, Last, VLT, RLT in zip(
-    #        Jahresstunden_L, Stunde_L, Tag_des_Jahres_L, Einstrahlung_hori_L, Temperatur_L, Windgeschwindigkeit_L,
-    #        Last_L, VLT_L, RLT_L):
     for Tag_des_Jahres, K_beam, GbT, GdT_H_Dk, Temperatur, Windgeschwindigkeit, Last, VLT, RLT in zip(Tag_des_Jahres_L, K_beam_L, GbT_L, GdT_H_Dk_L, Temperatur_L, Windgeschwindigkeit_L, Last_L, VLT_L, RLT_L):
+        Eta0b_neu_K_beam_GbT = Eta0b_neu * K_beam * GbT
+        Eta0b_neu_Kthetadiff_GdT_H_Dk = Eta0b_neu * Kthetadiff * GdT_H_Dk
+
         if Zähler < 1:
             TS_unten = RLT
             Zieltemperatur_Solaranlage = TS_unten + Vorwärmung + DT_WT_Solar + DT_WT_Netz
@@ -270,8 +265,6 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
             c1 = Koll_c1 * (Tm_a - Temperatur)
             c2 = Koll_c2 * (Tm_a - Temperatur) ** 2
             c3 = Koll_c3 * wcorr * Windgeschwindigkeit * (Tm_a - Temperatur)
-            Eta0b_neu_K_beam_GbT = Eta0b_neu * K_beam * GbT
-            Eta0b_neu_Kthetadiff_GdT_H_Dk = Eta0b_neu * Kthetadiff * GdT_H_Dk
 
             # Calculate lower storage tank temperature
             if QS/QSmax >= 0.8:
@@ -284,8 +277,7 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
             TRL_Solar = TS_unten + DT_WT_Solar
 
             # Calculate collector A power output and temperature
-            Pkoll_a = max(0,
-                          (Eta0b_neu_K_beam_GbT + Eta0b_neu_Kthetadiff_GdT_H_Dk - c1 - c2 - c3) * Bezugsfläche / 1000)
+            Pkoll_a = max(0, (Eta0b_neu_K_beam_GbT + Eta0b_neu_Kthetadiff_GdT_H_Dk - c1 - c2 - c3) * Bezugsfläche / 1000)
             T_koll_a = Temperatur - (Temperatur - Tgkoll_a_alt) * exp(-Koll_c1 / KollCeff_A * 3.6) + (Pkoll_a * 3600) / (
                         KollCeff_A * Bezugsfläche)
 
@@ -293,8 +285,7 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
             c1 = Koll_c1 * (T_koll_b_alt - Temperatur)
             c2 = Koll_c2 * (T_koll_b_alt - Temperatur) ** 2
             c3 = Koll_c3 * wcorr * Windgeschwindigkeit * (T_koll_b_alt - Temperatur)
-            Pkoll_b = max(0,
-                          (Eta0b_neu_K_beam_GbT + Eta0b_neu_Kthetadiff_GdT_H_Dk - c1 - c2 - c3) * Bezugsfläche / 1000)
+            Pkoll_b = max(0, (Eta0b_neu_K_beam_GbT + Eta0b_neu_Kthetadiff_GdT_H_Dk - c1 - c2 - c3) * Bezugsfläche / 1000)
             T_koll_b = Temperatur - (Temperatur - Tgkoll_a_alt) * exp(-Koll_c1 / KollCeff_A * 3.6) + (Pkoll_b * 3600) / (
                         KollCeff_A * Bezugsfläche)
 
@@ -315,8 +306,7 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
             c1 = Koll_c1 * (Tm - Temperatur)
             c2 = Koll_c2 * (Tm - Temperatur) ** 2
             c3 = Koll_c3 * wcorr * Windgeschwindigkeit * (Tm - Temperatur)
-            Pkoll = max(0, (Eta0b_neu_K_beam_GbT + Eta0b_neu_Kthetadiff_GdT_H_Dk - c1
-                            - c2 - c3) * Bezugsfläche / 1000)
+            Pkoll = max(0, (Eta0b_neu_K_beam_GbT + Eta0b_neu_Kthetadiff_GdT_H_Dk - c1 - c2 - c3) * Bezugsfläche / 1000)
 
             # calculate collector temperature surplus
             T_koll = Temperatur - (Temperatur - Tgkoll) * exp(-Koll_c1 / KollCeff_A * 3.6) + (Pkoll * 3600) / (
@@ -339,13 +329,8 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
                 TRV_bin_vl = Temperatur - (Temperatur - TRV_bin_vl_alt) * exp(-Keq_RE / CRK)
                 TRV_bin_rl = Temperatur - (Temperatur - TRV_bin_rl_alt) * exp(-Keq_RE / CRK)
 
-            # Funktion zur Berechnung von P_RVT_bin_vl und P_RVT_bin_rl
-            def calc_P_RVT_bin(TRV_bin_vl, TRV_bin_rl):
-                return Lrbin_E / 1000 * ((TRV_bin_vl + TRV_bin_rl) / 2 - Temperatur) * 2 * pi * L_Erdreich * hs_RE
-
-            # Berechnung von P_RVT_bin_vl und P_RVT_bin_rl
-            P_RVT_bin_vl = calc_P_RVT_bin(TRV_bin_vl, TRV_bin_rl)
-            P_RVT_bin_rl = calc_P_RVT_bin(TRV_bin_vl, TRV_bin_rl)
+            # Berechnung von P_RVT_bin_vl und P_RVT_bin_rl, für Erdverlegte sind diese Identisch
+            P_RVT_bin_vl = P_RVT_bin_rl = Lrbin_E / 1000 * ((TRV_bin_vl + TRV_bin_rl) / 2 - Temperatur) * 2 * pi * L_Erdreich * hs_RE
 
             # Berechnung von P_RVK_bin_vl und P_RVK_bin_rl
             if ziel_erhöht:
@@ -363,8 +348,8 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
             trv_int_rl_check = Tgkoll >= Zieltemperatur_Solaranlage and Pkoll > 0
 
             TRV_int_vl = Zieltemperatur_Solaranlage if trv_int_vl_check else Temperatur - (
-                        Temperatur - TRV_int_vl) * exp(-KK / CKK)
-            TRV_int_rl = TRL_Solar if trv_int_rl_check else Temperatur - (Temperatur - TRV_int_rl) * exp(-KK / CKK)
+                        Temperatur - TRV_int_vl_alt) * exp(-KK / CKK)
+            TRV_int_rl = TRL_Solar if trv_int_rl_check else Temperatur - (Temperatur - TRV_int_rl_alt) * exp(-KK / CKK)
 
             P_RVT_int_vl = (TRV_int_vl - Temperatur) * KK * Bezugsfläche / 1000 / 2
             P_RVT_int_rl = (TRV_int_rl - Temperatur) * KK * Bezugsfläche / 1000 / 2
@@ -375,9 +360,8 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
                 P_RVK_int_vl = max((TRV_int_vl_alt - TRV_int_vl) * VRV * Bezugsfläche / 2 * 3790 / 3600, 0)
                 P_RVK_int_rl = max((TRV_int_rl_alt - TRV_int_rl) * VRV * Bezugsfläche / 2 * 3790 / 3600, 0)
 
-            PRV = max(P_RVT_bin_vl, P_RVK_bin_vl, 0) + max(P_RVT_int_vl, P_RVK_int_vl, 0) + max(P_RVT_bin_rl,
-                                                                                                P_RVK_bin_rl, 0) + max(
-                P_RVT_int_rl, P_RVK_int_rl, 0)  # Rohrleitungsverluste
+            PRV = max(P_RVT_bin_vl, P_RVK_bin_vl, 0) + max(P_RVT_bin_rl,P_RVK_bin_rl, 0) + \
+                  max(P_RVT_int_vl, P_RVK_int_vl, 0) + max(P_RVT_int_rl, P_RVK_int_rl, 0)  # Rohrleitungsverluste
 
             # Berechnung Kollektorfeldertrag
             if T_koll > Tgkoll_alt:
@@ -453,7 +437,7 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
 
     return Jahreswärmemenge, np.array(Speicher_Wärmeoutput_L)
 
-# print(Berechnung_STA(600, 20, "Flachkollektor")[0], "Daten.csv")
+# print(Berechnung_STA(600, 20, "Flachkollektor", "Daten.csv")[0])
 # print(Berechnung_STA(600, 30, "Röhrenkollektor")[0], "Daten.csv")
 
 # finanzielle Betrachtung

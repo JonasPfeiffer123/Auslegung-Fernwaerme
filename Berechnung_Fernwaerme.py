@@ -2,40 +2,50 @@
 
 # Import Bibliotheken
 from math import pi
-import csv
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from Berechnung_Solarthermie import Berechnung_STA, WGK_STA, Daten
 
 def Berechnung_PV(Bruttofläche):
-    data = np.loadtxt("Daten.csv", delimiter=",", skiprows=1).T
-    h_L, G_L, Ta_L, W_L = data[0], data[3], data[4], data[5]
+    # Laden der Daten aus der CSV-Datei
+    data = np.loadtxt("Daten.csv", delimiter=";", skiprows=1).T
 
-    P_L = []
-    E = 0
+    # Extrahieren der Spalten aus den Daten
+    G_L, Ta_L, W_L = data[4], data[3], data[5]
+
+    # Definieren der Konstanten
     eff_nom = 0.199
     sys_loss = 0.14
     U0 = 26.9  # W / (°C * m^2)
     U1 = 6.2  # W * s / (°C * m^3
     k1, k2, k3, k4, k5, k6 = -0.017237, -0.040465, -0.004702, 0.000149, 0.000170, 0.000005
 
-    for G, Ta, W in zip(G_L, Ta_L, W_L):
-        if G == 0:
-            P = 0
-        else:
-            Tm = Ta + G / (U0 + U1 * W)
-            G1 = G / 1000
-            T1m = Tm - 25
-            eff_rel = 1 + k1 * np.log(G1) + k2 * np.log(G1) ** 2 + k3 * T1m + k4 * T1m * np.log(G1) + k5 * Tm * np.log(
-                G1) ** 2 + k6 * Tm ** 2
-            P = G1 * Bruttofläche * eff_nom * eff_rel * (1 - sys_loss)
-        P_L.append(P)
-        E += P
+    # Berechnen des PV-Ertrags
+    G1 = G_L / 1000
+    Tm = Ta_L + G_L / (U0 + U1 * W_L)
+    T1m = Tm - 25
+    eff_rel = np.ones_like(G1)
+    non_zero_mask = G1 != 0
+    eff_rel[non_zero_mask] = 1 + k1 * np.log(G1[non_zero_mask]) + k2 * np.log(G1[non_zero_mask]) ** 2 + k3 * T1m[
+        non_zero_mask] + k4 * T1m[non_zero_mask] * np.log(G1[non_zero_mask]) + k5 * Tm[non_zero_mask] * np.log(
+        G1[non_zero_mask]) ** 2 + k6 * Tm[non_zero_mask] ** 2
+    eff_rel[~non_zero_mask] = 0
+    eff_rel = np.nan_to_num(eff_rel, nan=0)
+    P_L = G1 * Bruttofläche * eff_nom * eff_rel * (1 - sys_loss)
+    E = np.sum(P_L)
 
-    print("Jährlicher PV-Ertrag: " + str(round(E, 2)) + " kWh")
-    plt.plot(h_L, P_L)
+    print(round(E / 1000, 2))
+
+    # Plotten des Ergebnisses
+    plt.plot(range(1, 8761, 1), P_L)
+    plt.xlabel("Jahresstunden")
+    plt.ylabel("elektrische Leistung [kW]")
+    plt.title("PV-Leistung")
     plt.show()
+
+    # Rückgabe des jährlichen PV-Ertrags
+    return round(E / 1000, 2)
 # Berechnung_PV(1000)
 
 def COP_WP(VLT_L, QT):
@@ -276,32 +286,28 @@ def wgk_BHKW(Wärmeleistung_BHKW, Wärmemenge_BHKW, Strommenge_BHKW, Art, Brenns
     return WGK_BHKW
 
 def BHKW(el_Leistung_Soll, Last_L):
+    # Definieren der Wirkungsgrade
     el_Wirkungsgrad = 0.33
     KWK_Wirkungsgrad = 0.9
+
+    # Berechnen der thermischen Effizienz
     thermischer_Wirkungsgrad = KWK_Wirkungsgrad - el_Wirkungsgrad
-    Wärmeleistung_BHKW = round((el_Leistung_Soll / el_Wirkungsgrad) * thermischer_Wirkungsgrad, 0)
 
-    Wärmeleistung_BHKW_L = []
-    el_Leistung_BHKW_L = []
-    Betriebsstunden_BHKW = 0
-    Wärmemenge_BHKW = 0
-    Strommenge_BHKW = 0
-    for l in Last_L:
-        if l >= Wärmeleistung_BHKW:
-            Wärmeleistung_BHKW_L.append(Wärmeleistung_BHKW)
-            el_Leistung_BHKW_L.append(el_Leistung_Soll)
-            Wärmemenge_BHKW += Wärmeleistung_BHKW / 1000
-            Strommenge_BHKW += el_Leistung_Soll / 1000
-            Betriebsstunden_BHKW += 1
-        else:
-            Wärmeleistung_BHKW_L.append(l)
-            el_Leistung_BHKW_L.append(el_Leistung_Soll*(l/Wärmeleistung_BHKW))
-            Wärmemenge_BHKW += l / 1000
-            Strommenge_BHKW += el_Leistung_Soll*(l/Wärmeleistung_BHKW) /1000
+    # Berechnen der Wärmeleistung des BHKW
+    Wärmeleistung_BHKW = el_Leistung_Soll / el_Wirkungsgrad * thermischer_Wirkungsgrad
 
-    Gasbedarf_BHKW = (Wärmemenge_BHKW + Strommenge_BHKW) / KWK_Wirkungsgrad
+    # Berechnen der Strom- und Wärmemenge des BHKW
+    Wärmeleistung_BHKW_L = np.where(Last_L >= Wärmeleistung_BHKW, Wärmeleistung_BHKW, Last_L)
+    el_Leistung_BHKW_L = np.where(Last_L >= Wärmeleistung_BHKW, el_Leistung_Soll,
+                                  el_Leistung_Soll * (Last_L / Wärmeleistung_BHKW))
+    Wärmemenge_BHKW = np.sum(Wärmeleistung_BHKW_L / 1000)
+    Strommenge_BHKW = np.sum(el_Leistung_BHKW_L / 1000)
 
-    return Wärmeleistung_BHKW, Wärmeleistung_BHKW_L, el_Leistung_BHKW_L, Wärmemenge_BHKW, Strommenge_BHKW, Gasbedarf_BHKW
+    # Berechnen des Brennstoffbedarfs
+    Brennstoffbedarf_BHKW = (Wärmemenge_BHKW + Strommenge_BHKW) / KWK_Wirkungsgrad
+
+    # Rückgabe der berechneten Werte
+    return Wärmeleistung_BHKW, Wärmeleistung_BHKW_L, el_Leistung_BHKW_L, Wärmemenge_BHKW, Strommenge_BHKW, Brennstoffbedarf_BHKW
 
 def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_GK, Gaspreis, Strompreis, Holzpreis, filename, tech_order, el_Leistung_BHKW):
     Kühlleistung_Abwärme = 10  # kW
@@ -520,22 +526,4 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
 tech_order = ["Solarthermie", "Geothermie", "BHKW", "Biomassekessel", "Gaskessel"]
 
 # Berechnung_Erzeugermix(Fläche STA, Volumen Speicher, Typ STA, Fläche Erdsondenfeld, Tiefe Erdsondenbohrung, Einschaltpunkt GK, Gaspreis, Strompreis, Holzpreis, Dateiname, tech_order, Leistung BHKW)
-Berechnung_Erzeugermix(600, 20, "Flachkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order, 80)
-
-def Optimierung_Erzeugermix():
-    tech_order = ["Solarthermie", "Geothermie", "Holzgas-BHKW", "Biomassekessel", "Gaskessel"]
-    WGK = []
-    el_Leistung_BHKW = range(10, 200, 10)
-    for i in range(10, 200, 10):
-        WGK.append(Berechnung_Erzeugermix(600, 20, "Flachkollektor", 2000, 200, 0.5, 100, 200, 70, "Daten.csv", tech_order, i))
-
-    plt.plot(el_Leistung_BHKW, WGK, color="blue", linewidth=1, label="Wärmegestehungskosten")
-
-    plt.title("Wärmegestehungskosten nach BHKW-Größe")
-    plt.xlabel("elektrische Leistung BHKW")
-    plt.ylabel("Wärmegestehungskosten gesamt")
-    plt.legend(loc='upper center')
-    plt.show()
-
-
-# Optimierung_Erzeugermix()
+# Berechnung_Erzeugermix(600, 20, "Flachkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order, 80)
