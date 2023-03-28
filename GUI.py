@@ -20,8 +20,8 @@ def GUI():
         tech_order = ["Solarthermie", "Geothermie", "BHKW", "Biomassekessel", "Gaskessel"]
 
         result = Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_GK, Gaspreis, Strompreis,
-                                        Holzpreis, filename, tech_order, el_Leistung_BHKW)
-        result_label.config(text=f"Wärmegestehungskosten: {result:.2f}")
+                                        Holzpreis, filename, tech_order)
+        result_label.config(text=f"Wärmegestehungskosten: {result[0]:.2f}")
 
     def update_label(*args):
         label1.config(text=str(var1.get()))
@@ -69,7 +69,7 @@ def GUI():
 
     label_Daten = tk.Label(root, text="CSV-Dateiname mit den Daten")
     label_Daten.pack()
-    combo = ttk.Combobox(root, values=["Daten.csv"])
+    combo = ttk.Combobox(root, values=["Daten.csv", "Daten Görlitz.csv"])
     combo.pack()
 
     label_Bruttofläche_STA = tk.Label(root, text="Bruttofläche Solarthermieanlage in m²")

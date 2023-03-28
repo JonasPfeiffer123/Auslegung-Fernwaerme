@@ -445,9 +445,12 @@ def WGK_STA(Bruttofläche_STA, VS, typ, filename):
     Jahreswärmemenge, Speicher_Wärmeoutput_L = Berechnung_STA(Bruttofläche_STA, VS, typ, filename)
     if Jahreswärmemenge == 0:
         return 0
+
     kosten_pro_typ = {
-        "Flachkollektor": 440,
-        "Vakuumröhrenkollektor": 650
+        # Viessmann Flachkollektor Vitosol 200-FM, 2,56 m²: 697,9 € (brutto); 586,5 € (netto) -> 229 €/m² + 200 €/m² Installation/Zubehör
+        "Flachkollektor": 430,
+        # Ritter Vakuumröhrenkollektor CPC XL1921 (4,99m²): 2299 € (brutto); 1932 € (Netto) -> 387 €/m² + 200 €/m² Installation/Zubehör
+        "Vakuumröhrenkollektor": 590
     }
     Kosten_STA_spez = kosten_pro_typ[typ]  # €/m^2
 
@@ -486,12 +489,13 @@ def WGK_STA(Bruttofläche_STA, VS, typ, filename):
 # print(WGK_STA(600, 30, "Röhrenkollektor"), "Daten.csv")
 
 def Optimierung_WGK_STA(Typ, filename):
-    results = [(WGK_STA(f, v, Typ, filename), f, v) for v in range(10, 100, 10) for f in range(100, 1000, 100)]
+    results = [(WGK_STA(f, v, Typ, filename), f, v) for v in range(5, 40, 5) for f in range(300, 900, 100)]
     min_WGK, optimum_Bruttofläche, optimum_VS = min(results)
-
-    print("Die minimalen Wärmegestehungskosten der Solarthermieanlage betragen: " + str(min_WGK) + " €/MWh")
+    print(Typ)
+    print("Die minimalen Wärmegestehungskosten der Solarthermieanlage betragen: " + str(round(min_WGK, 2)) + " €/MWh")
     print("Die Speichergröße beträgt: " + str(optimum_VS) + " m^3")
     print("Die Bruttokollektorfläche beträgt: " + str(optimum_Bruttofläche) + " m^2")
 
 # Optimierung_WGK_STA("Flachkollektor", "Daten.csv")
-# Optimierung_WGK_STA("Röhrenkollektor", "Daten.csv")
+# Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten.csv")
+# Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten Görlitz Beleg.csv")
