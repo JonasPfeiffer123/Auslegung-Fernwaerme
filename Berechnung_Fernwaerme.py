@@ -59,12 +59,12 @@ def COP_WP(VLT_L, QT):
     VLT_L = np.minimum(VLT_L, 75)
     QT_array = np.full_like(VLT_L, QT)
 
-    COP_L = f(np.column_stack((QT_array, VLT_L))).flatten()
+    COP_L = f(np.column_stack((QT_array, VLT_L)))
     return COP_L, VLT_L
 
 def Berechnung_WP(Kühlleistung, QT, VLT_L):
-    COP_L = COP_WP(VLT_L, QT)
-    Wärmeleistung_L = Kühlleistung / (1 - (1 / np.array(COP_L)))
+    COP_L, VLT_L = COP_WP(VLT_L, QT)
+    Wärmeleistung_L = Kühlleistung / (1 - (1 / COP_L))
     el_Leistung_L = Wärmeleistung_L - Kühlleistung
     return Wärmeleistung_L, el_Leistung_L
 
@@ -107,6 +107,8 @@ def WGK_WP(Wärmeleistung, Wärmemenge, Strombedarf, Wärmequelle, spez_Investit
 
     return WGK_Gesamt
 
+
+# Änderung Kühlleistung und Temperatur zu Numpy-Array in aw sowie vor- und nachgelagerten Funktionen
 def aw(Last_L, VLT_L, Kühlleistung, Temperatur):
     if Kühlleistung == 0:
         return 0, 0, np.zeros_like(Last_L), np.zeros_like(VLT_L), 0
@@ -294,7 +296,7 @@ def BHKW(el_Leistung_Soll, Last_L):
     return Wärmeleistung_BHKW, Wärmeleistung_BHKW_L, el_Leistung_BHKW_L, Wärmemenge_BHKW, Strommenge_BHKW, Brennstoffbedarf_BHKW
 
 def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_GK, Gaspreis, Strompreis, Holzpreis, filename, tech_order, el_Leistung_BHKW=0):
-    Kühlleistung_Abwärme = 10  # kW
+    Kühlleistung_Abwärme = 30  # kW
     Temperatur_Abwärme = 30  # °C
     Kühlleistung_AWW = 30  # kW
     Temperatur_AWW = 10  # °C
@@ -325,6 +327,9 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
     P_max = max(Last_L) * 1.1
     P_ein_GK = P_max * f_P_GK
 
+    WGK = []
+    Anteile = []
+    Wärmemengen = []
     # zunächst Berechnung der Erzeugung
     for tech in tech_order:
         if tech == "Solarthermie":
@@ -337,12 +342,14 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Anteil_Solarthermie = Wärmemenge_Solarthermie / Jahreswärmebedarf
 
             data.append(Wärmeleistung_Solarthermie_L)
-            data_labels.append("thermische Leistung Solarthermie")
             colors.append("red")
 
-            WGK_Solarthermie = WGK_STA(Bruttofläche_STA, VS, Typ, filename)
+            WGK_Solarthermie = WGK_STA([Bruttofläche_STA, VS], Typ, filename)
             WGK_Gesamt += Wärmemenge_Solarthermie * WGK_Solarthermie
 
+            Wärmemengen.append(Wärmemenge_Solarthermie)
+            Anteile.append(Anteil_Solarthermie)
+            WGK.append(WGK_Solarthermie)
             print("Wärmemenge Solarthermie: " + str(round(Wärmemenge_Solarthermie, 2)) + " MWh")
             print("Anteil Solarthermie an Wärmeversorgung: " + str(round(Anteil_Solarthermie, 3)))
             print("Wärmegestehungskosten Solarthermie: " + str(round(WGK_Solarthermie, 2)) + " €/MWh")
@@ -361,11 +368,14 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Anteil_Abwärme = Wärmemenge_Abwärme / Jahreswärmebedarf
 
             data.append(Wärmeleistung_Abwärme_L)
-            data_labels.append("thermische Leistung Abwärmepumpe")
             colors.append("grey")
 
-            WGK_Abwärme = WGK_WP(max_Wärmeleistung, Wärmemenge_Abwärme, Strombedarf_Abwärme, tech, 0, Strompreis)
+            WGK_Abwärme = WGK_WP(max_Wärmeleistung_Abwärme, Wärmemenge_Abwärme, Strombedarf_Abwärme, tech, 0, Strompreis)
             WGK_Gesamt += Wärmemenge_Abwärme * WGK_Abwärme
+
+            Wärmemengen.append(Wärmemenge_Abwärme)
+            Anteile.append(Anteil_Abwärme)
+            WGK.append(WGK_Abwärme)
 
             print("Wärmemenge Abwärme: " + str(round(Wärmemenge_Abwärme, 2)) + " MWh")
             print("Anteil Abwärme an Wärmeversorgung: " + str(round(Anteil_Abwärme, 3)))
@@ -385,12 +395,14 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Anteil_AWW = Wärmemenge_AWW / Jahreswärmebedarf
 
             data.append(Wärmeleistung_AWW_L)
-            data_labels.append("thermische Leistung Abwasserwärmepumpe")
             colors.append("brown")
 
             WGK_AWW = WGK_WP(max_Wärmeleistung, Wärmemenge_Abwärme, Strombedarf_Abwärme, tech, 0, Strompreis)
             WGK_Gesamt += Wärmemenge_AWW * WGK_AWW
 
+            Wärmemengen.append(Wärmemenge_AWW)
+            Anteile.append(Anteil_AWW)
+            WGK.append(WGK_AWW)
             print("Wärmemenge Abwasserwärme: " + str(round(Wärmemenge_AWW, 2)) + " MWh")
             print("Anteil Abwasserwärme an Wärmeversorgung: " + str(round(Anteil_AWW, 3)))
             print("Wärmegestehungskosten Abwasserwärme: " + str(round(WGK_AWW, 2)) + " €/MWh")
@@ -411,13 +423,15 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Anteil_Geothermie = Wärmemenge_Geothermie / Jahreswärmebedarf
 
             data.append(Wärmeleistung_Geothermie_L)
-            data_labels.append("thermische Leistung Erdsonden-Wärmepumpe")
             colors.append("blue")
 
             WGK_Geothermie = WGK_WP(max_Wärmeleistung, Wärmemenge_Geothermie, Strombedarf_Geothermie, tech,
                                     spez_Investitionskosten_Erdsonden, Strompreis)
             WGK_Gesamt += Wärmemenge_Geothermie * WGK_Geothermie
 
+            Wärmemengen.append(Wärmemenge_Geothermie)
+            Anteile.append(Anteil_Geothermie)
+            WGK.append(WGK_Geothermie)
             print("Wärmemenge Geothermie: " + str(round(Wärmemenge_Geothermie, 2)) + " MWh")
             print("Anteil Geothermie an Wärmeversorgung: " + str(round(Anteil_Geothermie, 3)))
             print("Wärmegestehungskosten Geothermie: " + str(round(WGK_Geothermie, 2)) + " €/MWh")
@@ -436,7 +450,6 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Anteil_BHKW = Wärmemenge_BHKW / Jahreswärmebedarf
 
             data.append(Wärmeleistung_BHKW_L)
-            data_labels.append("thermische Leistung BHKW")
             colors.append("yellow")
 
             if tech == "BHKW":
@@ -448,6 +461,9 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
                                 Brennstoffpreis, Strompreis)
             WGK_Gesamt += Wärmemenge_BHKW * WGK_BHKW
 
+            Wärmemengen.append(Wärmemenge_BHKW)
+            Anteile.append(Anteil_BHKW)
+            WGK.append(WGK_BHKW)
             print("Wärmemenge BHKW: " + str(round(Wärmemenge_BHKW, 2)) + " MWh")
             print("Anteil BHKW an Wärmeversorgung: " + str(round(Anteil_BHKW, 3)))
             print("Wärmegestehungskosten BHKW: " + str(round(WGK_BHKW, 2)) + " €/MWh")
@@ -458,16 +474,18 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Restlast_L -= Wärmeleistung_GK_L
             Restwärmebedarf -= Wärmemenge_GK
 
-            Anteil_Erdgas = Wärmemenge_GK / Jahreswärmebedarf
+            Anteil_GK = Wärmemenge_GK / Jahreswärmebedarf
 
             data.append(Wärmeleistung_GK_L)
-            data_labels.append("thermische Leistung Gaskessel")
             colors.append("purple")
 
             WGK_Gesamt += Wärmemenge_GK * WGK_GK
 
+            Wärmemengen.append(Wärmemenge_GK)
+            Anteile.append(Anteil_GK)
+            WGK.append(WGK_GK)
             print("Wärmemenge Gaskessel: " + str(round(Wärmemenge_GK, 2)) + " MWh")
-            print("Anteil Erdgas an Wärmeversorgung: " + str(round(Anteil_Erdgas, 3)))
+            print("Anteil Erdgas an Wärmeversorgung: " + str(round(Anteil_GK, 3)))
             print("Wärmegestehungskosten Gaskessel: " + str(round(WGK_GK, 2)) + " €/MWh")
 
         elif tech == "Biomassekessel":
@@ -475,38 +493,42 @@ def Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, f_P_G
             Wärmemenge_BMK = Restwärmebedarf - WGK_Gaskessel(Last_L, P_ein_GK, P_max, Gaspreis)[0]
             Wärmeleistung_BMK_L = Restlast_L
 
-            Anteil_Holzpellets = Wärmemenge_BMK / Jahreswärmebedarf
+            Anteil_BMK = Wärmemenge_BMK / Jahreswärmebedarf
 
             data.append(Wärmeleistung_BMK_L)
-            data_labels.append("thermische Leistung Biomassekessel")
             colors.append("green")
 
             WGK_BMK = WGK_Biomassekessel(P_BMK, Wärmemenge_BMK, Holzpreis)
             WGK_Gesamt += Wärmemenge_BMK * WGK_BMK
 
+            Wärmemengen.append(Wärmemenge_BMK)
+            Anteile.append(Anteil_BMK)
+            WGK.append(WGK_BMK)
             print("Wärmemenge Biomassekessel: " + str(round(Wärmemenge_BMK, 2)) + " MWh")
-            print("Anteil Biomassekessel an Wärmeversorgung: " + str(round(Anteil_Holzpellets, 3)))
+            print("Anteil Biomassekessel an Wärmeversorgung: " + str(round(Anteil_BMK, 3)))
             print("Wärmegestehungskosten Biomassekessel: " + str(round(WGK_BMK, 2)) + " €/MWh")
 
     WGK_Gesamt /= Jahreswärmebedarf
     print("Wärmegestehungskosten Gesamt: " + str(round(WGK_Gesamt, 2)) + " €/MWh")
 
-    plt.plot(range(1, 8761), Last_L, color="black", linewidth=1, label="Last in kW")
-    plt.stackplot(range(1, 8761), data, labels=data_labels, colors=colors)
+    """plt.plot(range(1, 8761), Last_L, color="black", linewidth=1, label="Last in kW")
+    plt.stackplot(range(1, 8761), data, labels=tech_order, colors=colors)
 
     plt.title("Lastgang und Erzeugung Wärmenetz")
     plt.xlabel("Jahresstunden")
     plt.ylabel("thermische Leistung in kW")
     plt.legend(loc='upper center')
-    plt.show()
+    plt.show()"""
 
     Deckungsanteil = Wärmemenge_Solarthermie / Jahreswärmebedarf * 100  # %
-    return WGK_Gesamt, Deckungsanteil
+
+    return WGK_Gesamt, Jahreswärmebedarf, Deckungsanteil, Last_L, data, tech_order, colors, Wärmemengen, WGK, Anteile
 
 tech_order = ["Solarthermie", "Geothermie", "Holzgas-BHKW", "Biomassekessel", "Gaskessel"]
 tech_order_g = ["Solarthermie", "Holzgas-BHKW", "Geothermie", "Biomassekessel", "Gaskessel"]
+techorder_beleg = ["Solarthermie", "Geothermie", "Biomassekessel", "Gaskessel"]
 
 # Berechnung_Erzeugermix(Fläche STA, Volumen Speicher, Typ STA, Fläche Erdsondenfeld, Tiefe Erdsondenbohrung, Einschaltpunkt GK, Gaspreis, Strompreis, Holzpreis, Dateiname, tech_order, Leistung BHKW)
-Berechnung_Erzeugermix(600, 20, "Vakuumröhrenkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order)
+# Berechnung_Erzeugermix(600, 20, "Vakuumröhrenkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order)
 # Berechnung_Erzeugermix(1000, 30, "Vakuumröhrenkollektor", 11000, 150, 0.5, 100, 200, 50, "Daten Görlitz.csv", tech_order_g, 210)
-# Berechnung_Erzeugermix(400, 20, "Vakuumröhrenkollektor", 1000, 100, 0.5, 100, 200, 50, "Daten Görlitz Beleg.csv", tech_order_g, 20)
+# Berechnung_Erzeugermix(1000, 50, "Vakuumröhrenkollektor", 2000, 100, 0.5, 100, 200, 50, "Daten Görlitz Beleg.csv", techorder_beleg)
