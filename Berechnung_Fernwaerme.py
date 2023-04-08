@@ -155,8 +155,6 @@ def Berechnung_Erzeugermix(bruttofläche_STA, vs, Typ, Fläche, Bohrtiefe, P_BMK
             print("Wärmegestehungskosten Geothermie: " + str(round(WGK_Geothermie, 2)) + " €/MWh")
 
         elif tech == "BHKW" or tech == "Holzgas-BHKW":
-            el_Leistung_BHKW = max(el_Leistung_ges_L) if max(el_Leistung_ges_L) > 0 else el_Leistung_BHKW
-
             Wärmeleistung_BHKW, Wärmeleistung_BHKW_L, el_Leistung_BHKW_L, Wärmemenge_BHKW, Strommenge_BHKW, \
                 Brennstoffbedarf_BHKW = BHKW(el_Leistung_BHKW, Restlast_L)
 

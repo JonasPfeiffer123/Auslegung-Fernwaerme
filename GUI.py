@@ -28,32 +28,34 @@ def GUI():
                                              Holzpreis, filename, tech_order, BEW, el_Leistung_BHKW, Kapitalzins, Preissteigerungsrate)
 
         zeile = 1
-        label = tk.Label(inner_frame, text=f"Jahreswärmebedarf: {Jahreswärmebedarf:.2f} MWh")
+        label = tk.Label(inner_frame, text=f"Jahreswärmebedarf:")
         label.grid(row=zeile, column=3, sticky="w")
+        label = tk.Label(inner_frame, text=f"{Jahreswärmebedarf:.2f} MWh")
+        label.grid(row=zeile, column=4, sticky="w")
         zeile += 1
         for t, wärmemenge, anteil, wgk in zip(tech_order, Wärmemengen, Anteile, WGK):
-            label_result = tk.Label(inner_frame, text="Wärmemenge " + str(t))
+            label_result = tk.Label(inner_frame, text="Wärmemenge " + str(t) + ":")
             label_result.grid(row=zeile, column=3, sticky="w")
-            label_result = tk.Label(inner_frame, text=f": {wärmemenge:.2f} MWh")
+            label_result = tk.Label(inner_frame, text=f"{wärmemenge:.2f} MWh")
             label_result.grid(row=zeile, column=4, sticky="w")
             zeile += 1
-            label_result = tk.Label(inner_frame, text="Wärmegestehungskosten " + str(t))
+            label_result = tk.Label(inner_frame, text="Wärmegestehungskosten " + str(t) + ":")
             label_result.grid(row=zeile, column=3, sticky="w")
-            label_result = tk.Label(inner_frame, text=f": {wgk:.2f} €/MWh")
+            label_result = tk.Label(inner_frame, text=f"{wgk:.2f} €/MWh")
             label_result.grid(row=zeile, column=4, sticky="w")
             zeile += 1
-            label_result = tk.Label(inner_frame, text="Anteil an Wärmeversorgung " + str(t))
+            label_result = tk.Label(inner_frame, text="Anteil an Wärmeversorgung " + str(t) + ":")
             label_result.grid(row=zeile, column=3, sticky="w")
-            label_result = tk.Label(inner_frame, text=f": {anteil:.2f}")
+            label_result = tk.Label(inner_frame, text=f"{anteil:.2f}")
             label_result.grid(row=zeile, column=4, sticky="w")
             zeile += 1
 
-        result_label.config(text=f"Wärmegestehungskosten: {WGK_Gesamt:.2f} €/MWh")
+        result_label2.config(text=f"{WGK_Gesamt:.2f} €/MWh")
 
         # Diagramm erstellen
         fig, ax = plt.subplots()
 
-        ax.plot(range(1, 8761), Last_L, color="black", linewidth=1, label="Last in kW")
+        ax.plot(range(1, 8761), Last_L, color="black", linewidth=0.5, label="Last in kW")
         ax.stackplot(range(1, 8761), data_L, labels=data_labels_L, colors=colors_L)
         ax.set_title("Lastgang und Erzeugung Wärmenetz")
         ax.set_xlabel("Jahresstunden")
@@ -68,7 +70,7 @@ def GUI():
         pie, ax1 = plt.subplots()
         ax1.pie(Anteile, labels=data_labels_L, colors=colors_L, autopct='%1.1f%%', startangle=90)
         ax1.set_title("Anteile Wärmeerzeugung")
-        ax1.legend(loc='upper right')
+        ax1.legend(loc='center right')
         ax1.axis("equal")
         canvas1 = FigureCanvasTkAgg(pie, master=inner_frame)
         canvas1.draw()
@@ -234,7 +236,7 @@ def GUI():
 
     label_order = tk.Label(inner_frame, text="Reihenfolge Technologie")
     label_order.grid(row=reihe, column=0)
-    entry10 = tk.Entry(inner_frame)
+    entry10 = tk.Entry(inner_frame, width=75)
     entry10.insert(0, "Solarthermie,Geothermie,BHKW,Biomassekessel,Gaskessel")
     entry10.grid(row=reihe, column=1)
     reihe += 1
@@ -243,8 +245,10 @@ def GUI():
     submit_button.grid(row=reihe, column=1)
     reihe += 1
 
-    result_label = tk.Label(inner_frame, text="Wärmegestehungskosten Gesamt: Berechnung notwendig!")
+    result_label = tk.Label(inner_frame, text="Wärmegestehungskosten Gesamt:")
     result_label.grid(row=0, column=3, sticky="w")
+    result_label2 = tk.Label(inner_frame, text="Berechnung notwendig!")
+    result_label2.grid(row=0, column=4, sticky="w")
 
     inner_frame.mainloop()
 
