@@ -97,7 +97,7 @@ def GUI():
 
     reihe = 0
 
-    label_Daten = tk.Label(inner_frame, text="Daten", font=überschrift)
+    label_Daten = tk.Label(inner_frame, text="Dateneingabe Auslegung und Berechnung Wärmegestehungskosten", font=überschrift)
     label_Daten.grid(row=reihe, column=0, columnspan=2, sticky="w")
     reihe += 1
 
