@@ -57,6 +57,7 @@ Aktuelle ToDos für die Auslegung:
   - weitere Erzeugertechnologien implementieren (Luftwärmepumpe (technologisch begrenzt), Elektrodenkessel, wasserstoffbasierte Lösungen auch denkbar, auch wenn diese primär       in der Wärmeversorgung keine Rolle spielen sollten (Kessel, BHKW, Elektrolyseur, Brennstoffzelle)
   - Optimierung Zusammenspiel Erzeuger
   - Überarbeitung der Struktur (gegebenenfalls Funktionen/Codeabschnitte auslagern, insgesamt Optimierung)
+  - exception-handling implementieren
   
  Weitere Ideen:
   - Aktuell wird mit bekanntem/gesetztem Lastgang sowie vorgegebenen Vor- und Rücklauftemperaturen gearbeitet
