@@ -9,6 +9,9 @@ Ansonsten ist zur Auslegung die Datei "Berechnung_Fernwaerme.py" zuständig. Die
 Die Datei "Daten.csv" beinhaltet einen Beispieldatensatz für Wetterdaten und Wärmelastgang und Temperaturdaten für Vor- und Rücklauf.
 Die Datei "Kennlinien WP.csv" beinhaltet ein COP-Kennfeld, welches zur Berechnung der Wärmepumpen genutzt wird. Innerhalb des Kennfeldes wird Interpoliert. Das Kennfeld stammt aus einem Produktblatt von Viessmann für deren Hochtemperatur-Großwärmepumpe "Vitocal 350-HT Pro"
 
+Im Bild "GUI Ausschnitt 1.png" sind beispielhafte Eingabedaten und die Ergebnisse dargestellt.
+Im "GUI Ausschnitt 2.png" folgt die Darstellung der Diagramme
+
 Notwendige Bibliotheken sind:
 - matplotlib
 - scipy
