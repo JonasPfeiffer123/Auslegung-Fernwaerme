@@ -1,6 +1,8 @@
 # Auslegung-Fernwaerme
 # Autor: Jonas Pfeiffer (Student Energie- und Umwelttechnik Hochschule Zittau/Görlitz)
 
+WICHTIG!: Durch viele Anpassungen im Code und der ausschließlichen Arbeit mit der GUI kann es sein, dass die auskommentierten Funktionsaufrufe aktuell nicht ohne zusätzlichen Input funktionieren. Daher ist Nutzung von GUI zu empfehlen!
+
 Ziel des Projektes ist die automatisierte Versorgungskonzept-Erstellung für Wärmenetze anhand verschiedener Input-Parameter.
 
 Für den Einstieg empfielt sich zunächst die Datei "GUI.py" auszuführen, welche auf die anderen zugreift. Dort ist die Eingabe von Parametern am einfachsten. 
