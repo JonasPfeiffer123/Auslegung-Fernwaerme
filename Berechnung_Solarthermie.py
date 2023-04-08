@@ -1,9 +1,12 @@
-# Ertragsberechnungsprogramm Solarthermie in Wärmenetz (Berechnungsgrundlage: ScenoCalc Fernwärme 2.0 https://www.scfw.de/)
+# Ertragsberechnungsprogramm Solarthermie in Wärmenetz (Berechnungsgrundlage: ScenoCalc Fernwärme 2.0
+# https://www.scfw.de/)
 
 # Import Bibliotheken
 from math import pi, exp, log, sqrt
 import csv
 import numpy as np
+from scipy.optimize import minimize
+from Wirtschaftlichkeitsbetrachtung import WGK_STA
 
 def Daten(filename):
     with open(filename, 'r') as csv_file:
@@ -440,56 +443,8 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
 # print(Berechnung_STA(600, 20, "Flachkollektor", "Daten.csv")[0])
 # print(Berechnung_STA(600, 30, "Röhrenkollektor")[0], "Daten.csv")
 
-# finanzielle Betrachtung
-def WGK_STA(Bruttofläche_STA, VS, typ, filename):
-    Jahreswärmemenge, Speicher_Wärmeoutput_L = Berechnung_STA(Bruttofläche_STA, VS, typ, filename)
-    if Jahreswärmemenge == 0:
-        return 0
-
-    kosten_pro_typ = {
-        # Viessmann Flachkollektor Vitosol 200-FM, 2,56 m²: 697,9 € (brutto); 586,5 € (netto) -> 229 €/m² + 200 €/m² Installation/Zubehör
-        "Flachkollektor": 430,
-        # Ritter Vakuumröhrenkollektor CPC XL1921 (4,99m²): 2299 € (brutto); 1932 € (Netto) -> 387 €/m² + 200 €/m² Installation/Zubehör
-        "Vakuumröhrenkollektor": 590
-    }
-    Kosten_STA_spez = kosten_pro_typ[typ]  # €/m^2
-
-    Kosten_Speicher_spez = 800  # €/m^3
-    Anteil_Förderung_BEW = 0.4
-    Eigenanteil = 1 - Anteil_Förderung_BEW
-    Betriebskostenförderung = 10  # €/MWh 10 Jahre
-    Betriebskostenförderung_Dauer = 10
-    Nutzungsdauer = 20
-
-    Investitionskosten_Speicher = VS * Kosten_Speicher_spez
-    Investitionskosten_STA = Bruttofläche_STA * Kosten_STA_spez
-    Investitionskosten_Gesamt = Investitionskosten_Speicher + Investitionskosten_STA
-    Investitionskosten_Gesamt_BEW = Investitionskosten_Gesamt * Eigenanteil
-
-    Betriebskosten_Jahr = Investitionskosten_Gesamt * 0.015
-    Betriebskosten_Nutzungsdauer = Betriebskosten_Jahr * Nutzungsdauer
-
-    # Inflationsrate = 2.33  # % - Mittelwert 2003 - 2023
-    # Betriebskosten_Gesamt = np.sum(Betriebskosten_Jahr * np.power(1 + Inflationsrate / 100, np.arange(Nutzungsdauer)))
-    # durchschnittliche_Betriebskosten_Jahr = Betriebskosten_Gesamt / Nutzungsdauer
-
-    Gesamtkosten_Nutzungsdauer = Investitionskosten_Gesamt + Betriebskosten_Nutzungsdauer
-    Gesamtkosten_Nutzungsdauer_BEW = Investitionskosten_Gesamt_BEW + Betriebskosten_Nutzungsdauer
-
-    Betriebskostenförderung_Gesamt = Betriebskostenförderung * Betriebskostenförderung_Dauer * Jahreswärmemenge
-
-    Wärmemenge_Nutzungsdauer = Jahreswärmemenge * Nutzungsdauer
-
-    Wärmepreis = Gesamtkosten_Nutzungsdauer / Wärmemenge_Nutzungsdauer
-    Wärmepreis_BEW = (Gesamtkosten_Nutzungsdauer_BEW - Betriebskostenförderung_Gesamt) / Wärmemenge_Nutzungsdauer
-
-    return Wärmepreis
-
-# print(WGK_STA(600, 20, "Flachkollektor"), "Daten.csv")
-# print(WGK_STA(600, 30, "Röhrenkollektor"), "Daten.csv")
-
-def Optimierung_WGK_STA(Typ, filename):
-    results = [(WGK_STA(f, v, Typ, filename), f, v) for v in range(5, 40, 5) for f in range(300, 900, 100)]
+def Optimierung_WGK_STA(Typ, filename, BEW="Nein"):
+    results = [(WGK_STA([f, v], Typ, filename, BEW), f, v) for v in range(5, 40, 5) for f in range(300, 900, 100)]
     min_WGK, optimum_Bruttofläche, optimum_VS = min(results)
     print(Typ)
     print("Die minimalen Wärmegestehungskosten der Solarthermieanlage betragen: " + str(round(min_WGK, 2)) + " €/MWh")
@@ -497,5 +452,14 @@ def Optimierung_WGK_STA(Typ, filename):
     print("Die Bruttokollektorfläche beträgt: " + str(optimum_Bruttofläche) + " m^2")
 
 # Optimierung_WGK_STA("Flachkollektor", "Daten.csv")
+# Optimierung_WGK_STA("Flachkollektor", "Daten.csv", "Ja")
 # Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten.csv")
 # Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten Görlitz Beleg.csv")
+
+def Optimierung_WGK_STA_scipy(Typ, filename):
+    x0 = [300, 5]
+    bounds = [(300, 1000), (5, 40)]
+    results = minimize(WGK_STA, x0, args=(Typ, filename), method='SLSQP', bounds=bounds)
+    print(results.fun, results.x)
+
+# Optimierung_WGK_STA_scipy("Flachkollektor", "Daten.csv")
