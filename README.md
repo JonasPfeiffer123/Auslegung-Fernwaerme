@@ -23,7 +23,7 @@ Notwendige Bibliotheken sind:
 Die Erzeugerauslegung funktioniert nach Einschätzung des Autor.
 
 Kurzbeschreibungen zu den einzelnen Python-Dateien:
-"Berechnung_Erzeugermix.py":
+"Berechnung_Fernwaerme.py":
   - Hauptfunktion
   - verarbeitet die Inputdaten
   - setzt die Wärmeerzeuger der Reihenfolge nach zusammen
