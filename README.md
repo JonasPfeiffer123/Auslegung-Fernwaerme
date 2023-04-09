@@ -63,7 +63,7 @@ Aktuelle ToDos für die Auslegung:
   
  Weitere Ideen:
   - Aktuell wird mit bekanntem/gesetztem Lastgang sowie vorgegebenen Vor- und Rücklauftemperaturen gearbeitet
-    -> Erstrebenswert wäre Lastganggenerierung durch Standardlastprofile (BDEW, TUM) oder Volllaststunden oder ähnlichem
+    -> Erstrebenswert wäre Lastganggenerierung durch Standardlastprofile (BDEW, TUM) oder VDI 4655
   - nach erfolgter Auslegung (u.a. Wahl tatsächlicher Anlagendimensionen) muss Betrieb simuliert werden
     -> Zusammenspiel mit Speicher, Implementation von Regelung, An- und Abfahrprozesse beachten
   - in weiteren Schritten müsste dann die Netzsimulation mit implementiert werden
