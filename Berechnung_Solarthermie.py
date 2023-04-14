@@ -5,7 +5,6 @@
 from math import pi, exp, log, sqrt
 import csv
 import numpy as np
-from scipy.optimize import minimize
 from Wirtschaftlichkeitsbetrachtung import WGK_STA
 
 def Daten(filename):
@@ -120,10 +119,9 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
     Jahresstunden_L, Stunde_L, Tag_des_Jahres_L, Einstrahlung_hori_L, \
         Temperatur_L, Windgeschwindigkeit_L, Last_L, VLT_L, RLT_L, Jahreswärmebedarf = Daten(filename)
 
-    if Bruttofläche_STA == 0:
+    if Bruttofläche_STA == 0 or VS == 0:
         return 0, np.zeros_like(Jahresstunden_L)
-    if VS == 0:
-        return 0, np.zeros_like(Jahresstunden_L)
+
     # statische Vorgabewerte
     # Location = "Bautzen"
     # muss aus der CSV kommen
@@ -443,23 +441,15 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
 # print(Berechnung_STA(600, 20, "Flachkollektor", "Daten.csv")[0])
 # print(Berechnung_STA(600, 30, "Röhrenkollektor")[0], "Daten.csv")
 
-def Optimierung_WGK_STA(Typ, filename, BEW="Nein"):
-    results = [(WGK_STA([f, v], Typ, filename, BEW), f, v) for v in range(5, 40, 5) for f in range(300, 900, 100)]
+def Optimierung_WGK_STA(typ, filename, BEW="Nein"):
+    results = [(WGK_STA(f, v, typ, Berechnung_STA(f, v, typ, filename)[0], 1.05, 1.03, 20, BEW), f, v) for v in range(5, 40, 5) for f in range(300, 900, 100)]
     min_WGK, optimum_Bruttofläche, optimum_VS = min(results)
-    print(Typ)
+    print(typ)
     print("Die minimalen Wärmegestehungskosten der Solarthermieanlage betragen: " + str(round(min_WGK, 2)) + " €/MWh")
     print("Die Speichergröße beträgt: " + str(optimum_VS) + " m^3")
     print("Die Bruttokollektorfläche beträgt: " + str(optimum_Bruttofläche) + " m^2")
 
-# Optimierung_WGK_STA("Flachkollektor", "Daten.csv")
 # Optimierung_WGK_STA("Flachkollektor", "Daten.csv", "Ja")
-# Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten.csv")
-# Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten Görlitz Beleg.csv")
-
-def Optimierung_WGK_STA_scipy(Typ, filename):
-    x0 = [300, 5]
-    bounds = [(300, 1000), (5, 40)]
-    results = minimize(WGK_STA, x0, args=(Typ, filename), method='SLSQP', bounds=bounds)
-    print(results.fun, results.x)
-
-# Optimierung_WGK_STA_scipy("Flachkollektor", "Daten.csv")
+# Optimierung_WGK_STA("Flachkollektor", "Daten.csv", "Nein")
+# Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten.csv", "Ja")
+# Optimierung_WGK_STA("Vakuumröhrenkollektor", "Daten.csv", "Nein")
