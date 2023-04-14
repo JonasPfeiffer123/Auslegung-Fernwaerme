@@ -5,42 +5,34 @@ from Berechnung_Solarthermie import Berechnung_STA, Daten
 from Berechnung_Erzeuger import aw, Geothermie, BHKW, Biomassekessel, Gaskessel
 from Wirtschaftlichkeitsbetrachtung import WGK_WP, WGK_BHKW, WGK_Biomassekessel, WGK_Gaskessel, WGK_STA
 
-def Berechnung_Erzeugermix(bruttofläche_STA, vs, Typ, Fläche, Bohrtiefe, P_BMK, Gaspreis, Strompreis, Holzpreis,
-                           filename, tech_order, BEW, el_Leistung_BHKW=0, Kapitalzins=5, Preissteigerungsrate=3,
-                           Betrachtungszeitraum=20):
-    # Kapitalzins und Preissteigerungsrate in % -> Umrechung in Zinsfaktor und Preissteigerungsfaktor
-    q = 1 + Kapitalzins/100
-    r = 1 + Preissteigerungsrate/100
+def calculate_factors(Kapitalzins, Preissteigerungsrate, Betrachtungszeitraum):
+    q = 1 + Kapitalzins / 100
+    r = 1 + Preissteigerungsrate / 100
     T = Betrachtungszeitraum
+    return q, r, T
 
-    Kühlleistung_Abwärme = 30  # kW
-    Temperatur_Abwärme = 30  # °C
-    Kühlleistung_AWW = 30  # kW
-    Temperatur_AWW = 10  # °C
-    Temperatur_Geothermie = 15  # °C
-
+def get_initial_data(filename):
     Jahreswärmebedarf = Daten(filename)[9]
     Last_L = Daten(filename)[6]
     VLT_L = Daten(filename)[7]
-
     print("Jahreswärmebedarf: " + str(round(Jahreswärmebedarf, 2)) + " MWh")
+    return Jahreswärmebedarf, Last_L, VLT_L
 
-    Restlast_L = Last_L.copy()
-    Restwärmebedarf = Jahreswärmebedarf
-    WGK_Gesamt = 0
+def Berechnung_Erzeugermix(bruttofläche_STA, vs, Typ, Fläche, Bohrtiefe, Temperatur_Geothermie, P_BMK, Gaspreis,
+                           Strompreis, Holzpreis, filename, tech_order, BEW, el_Leistung_BHKW, Kühlleistung_Abwärme,
+                           Temperatur_Abwärme, Kühlleistung_AWW, Temperatur_AWW, Kapitalzins=5, Preissteigerungsrate=3,
+                           Betrachtungszeitraum=20):
 
-    Strombedarf_WP = 0
-    Strommenge_BHKW = 0
-    el_Leistung_ges_L = np.zeros_like(Last_L)
-    Wärmeleistung_ges_L = np.zeros_like(Last_L)
+    # Kapitalzins und Preissteigerungsrate in % -> Umrechung in Zinsfaktor und Preissteigerungsfaktor
+    q, r, T = calculate_factors(Kapitalzins, Preissteigerungsrate, Betrachtungszeitraum)
+    Jahreswärmebedarf, Last_L, VLT_L = get_initial_data(filename)
 
-    data = []
-    colors = []
+    Restlast_L, Restwärmebedarf, WGK_Gesamt, Deckungsanteil = Last_L.copy(), Jahreswärmebedarf, 0, 0
+    data, colors, Wärmemengen, Anteile, WGK = [], [], [], [], []
 
-    WGK = []
-    Anteile = []
-    Wärmemengen = []
-    Deckungsanteil = 0
+    Strombedarf_WP, Strommenge_BHKW = 0, 0
+    el_Leistung_ges_L, Wärmeleistung_ges_L = np.zeros_like(Last_L)
+
     # zunächst Berechnung der Erzeugung
     for tech in tech_order:
         if tech == "Solarthermie":
@@ -229,30 +221,14 @@ def Berechnung_Erzeugermix(bruttofläche_STA, vs, Typ, Fläche, Bohrtiefe, P_BMK
     WGK_Gesamt /= Jahreswärmebedarf
     print("Wärmegestehungskosten Gesamt: " + str(round(WGK_Gesamt, 2)) + " €/MWh")
 
-    """plt.plot(range(1, 8761), Last_L, color="black", linewidth=1, label="Last in kW")
-    plt.stackplot(range(1, 8761), data, labels=tech_order, colors=colors)
-
-    plt.title("Lastgang und Erzeugung Wärmenetz")
-    plt.xlabel("Jahresstunden")
-    plt.ylabel("thermische Leistung in kW")
-    plt.legend(loc='upper center')
-    plt.show()"""
-
     if BEW == "Ja":
         WGK_Gesamt = 0
     return WGK_Gesamt, Jahreswärmebedarf, Deckungsanteil, Last_L, data, tech_order, colors, Wärmemengen, WGK, Anteile
 
-tech_order_d = ["Solarthermie", "Geothermie", "Holzgas-BHKW", "Biomassekessel", "Gaskessel"]
-tech_order_g = ["Solarthermie", "Holzgas-BHKW", "Geothermie", "Biomassekessel", "Gaskessel"]
-techorder_beleg = ["Solarthermie", "Geothermie", "Biomassekessel", "Gaskessel"]
+tech_order = ["Solarthermie", "Geothermie", "Holzgas-BHKW", "Biomassekessel", "Gaskessel"]
 
 # Berechnung_Erzeugermix(Fläche STA, Volumen Speicher, Typ STA, Fläche Erdsondenfeld, Tiefe Erdsondenbohrung,
 # Einschaltpunkt GK, Gaspreis, Strompreis, Holzpreis, Dateiname, tech_order_d, BEW, Leistung BHKW)
 
 # Berechnung_Erzeugermix(600, 20, "Vakuumröhrenkollektor", 2000, 200, 0.5, 100, 200, 50, "Daten.csv", tech_order,"Nein")
 
-# Berechnung_Erzeugermix(1000, 30, "Vakuumröhrenkollektor", 11000, 150, 0.5, 100, 200, 50, "Daten Görlitz.csv",
-# tech_order_g, "Nein", 210)
-
-# Berechnung_Erzeugermix(1000, 50, "Vakuumröhrenkollektor", 2000, 100, 0.5, 100, 200, 50, "Daten Görlitz Beleg.csv",
-# techorder_beleg, "Nein")
