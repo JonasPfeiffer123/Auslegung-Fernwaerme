@@ -20,12 +20,19 @@ def GUI():
         BEW = combo2.get()
         Kapitalzins = float(entry11.get())
         Preissteigerungsrate = float(entry12.get())
+        Temperatur_Geothermie = float(entry13.get())
+        Kühlleistung_Abwärme = float(entry14.get())
+        Temperatur_Abwärme = float(entry15.get())
+        Kühlleistung_AWW = float(entry16.get())
+        Temperatur_AWW = float(entry17.get())
 
         tech_order = entry10.get().split(",")  # aus der Entry-Box auslesen und Liste erstellen
 
         WGK_Gesamt, Jahreswärmebedarf, Deckungsanteil, Last_L, data_L, data_labels_L, colors_L, Wärmemengen, WGK, \
-            Anteile = Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, P_BMK, Gaspreis, Strompreis,
-                                             Holzpreis, filename, tech_order, BEW, el_Leistung_BHKW, Kapitalzins, Preissteigerungsrate)
+            Anteile = Berechnung_Erzeugermix(Bruttofläche_STA, VS, Typ, Fläche, Bohrtiefe, Temperatur_Geothermie, P_BMK,
+                                             Gaspreis, Strompreis, Holzpreis, filename, tech_order, BEW,
+                                             el_Leistung_BHKW, Kühlleistung_Abwärme, Temperatur_Abwärme,
+                                             Kühlleistung_AWW, Temperatur_AWW, Kapitalzins, Preissteigerungsrate)
 
         zeile = 1
         label = tk.Label(inner_frame, text=f"Jahreswärmebedarf:")
@@ -203,8 +210,51 @@ def GUI():
     entry4.grid(row=reihe, column=1)
     reihe += 1
 
-    label_Bruttofläche_STA = tk.Label(inner_frame, text="Eingaben Biomassekessel", font=überschrift)
+    label_Temperatur_ES = tk.Label(inner_frame, text="Quelltemperatur Erdsonden")
+    label_Temperatur_ES.grid(row=reihe, column=0)
+    entry13 = tk.Entry(inner_frame)
+    entry13.insert(0, "15")
+    entry13.grid(row=reihe, column=1)
+    reihe += 1
+
+    label_Bruttofläche_STA = tk.Label(inner_frame, text="Eingaben Abwärme", font=überschrift)
     label_Bruttofläche_STA.grid(row=reihe, column=0, columnspan=2, sticky="w")
+    reihe += 1
+
+    label_Kühlleistung_AW = tk.Label(inner_frame, text="Kühlleistung Abwärme")
+    label_Kühlleistung_AW.grid(row=reihe, column=0)
+    entry14 = tk.Entry(inner_frame)
+    entry14.insert(0, "10")
+    entry14.grid(row=reihe, column=1)
+    reihe += 1
+
+    label_Temperatur_AW = tk.Label(inner_frame, text="Quelltemperatur Abwärme")
+    label_Temperatur_AW.grid(row=reihe, column=0)
+    entry15 = tk.Entry(inner_frame)
+    entry15.insert(0, "30")
+    entry15.grid(row=reihe, column=1)
+    reihe += 1
+
+    label_Eingabe_AWW = tk.Label(inner_frame, text="Eingaben Abwasserwärme", font=überschrift)
+    label_Eingabe_AWW.grid(row=reihe, column=0, columnspan=2, sticky="w")
+    reihe += 1
+
+    label_Kühlleistung_AWW = tk.Label(inner_frame, text="Kühlleistung Abwasserwärme")
+    label_Kühlleistung_AWW.grid(row=reihe, column=0)
+    entry16 = tk.Entry(inner_frame)
+    entry16.insert(0, "30")
+    entry16.grid(row=reihe, column=1)
+    reihe += 1
+
+    label_Temperatur_AWW = tk.Label(inner_frame, text="Quelltemperatur Abwasserwärme")
+    label_Temperatur_AWW.grid(row=reihe, column=0)
+    entry17 = tk.Entry(inner_frame)
+    entry17.insert(0, "20")
+    entry17.grid(row=reihe, column=1)
+    reihe += 1
+
+    label_Eingabe_BMK = tk.Label(inner_frame, text="Eingaben Biomassekessel", font=überschrift)
+    label_Eingabe_BMK.grid(row=reihe, column=0, columnspan=2, sticky="w")
     reihe += 1
 
     label_P_BMK = tk.Label(inner_frame, text="thermische Leistung Biomassekessel")
@@ -214,8 +264,8 @@ def GUI():
     entry5.grid(row=reihe, column=1)
     reihe += 1
 
-    label_Bruttofläche_STA = tk.Label(inner_frame, text="Eingaben BHKW", font=überschrift)
-    label_Bruttofläche_STA.grid(row=reihe, column=0, columnspan=2, sticky="w")
+    label_Eingabe_BHKW = tk.Label(inner_frame, text="Eingaben BHKW", font=überschrift)
+    label_Eingabe_BHKW.grid(row=reihe, column=0, columnspan=2, sticky="w")
     reihe += 1
 
     label_BHKW = tk.Label(inner_frame, text="elektrische Leistung BHKW")
@@ -225,8 +275,8 @@ def GUI():
     entry9.grid(row=reihe, column=1)
     reihe += 1
 
-    label_Bruttofläche_STA = tk.Label(inner_frame, text="Eingaben Anlagen", font=überschrift)
-    label_Bruttofläche_STA.grid(row=reihe, column=0, columnspan=2, sticky="w")
+    label_Eingabe_Anlagen = tk.Label(inner_frame, text="Eingaben Anlagen", font=überschrift)
+    label_Eingabe_Anlagen.grid(row=reihe, column=0, columnspan=2, sticky="w")
     reihe += 1
 
     label_order_a = tk.Label(inner_frame, text="verfügbar: Solarthermie, Abwasserwärme, Abwärme, Geothermie, "
