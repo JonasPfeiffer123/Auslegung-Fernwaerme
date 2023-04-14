@@ -116,10 +116,14 @@ def Berechnung_Solarstrahlung(Stunde_L, Tag_des_Jahres_L, Einstrahlung_hori_L,
     return K_beam, GbT, GdT_H_Dk
 
 def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
+    # dynamische Vorgabewerte
+    Jahresstunden_L, Stunde_L, Tag_des_Jahres_L, Einstrahlung_hori_L, \
+        Temperatur_L, Windgeschwindigkeit_L, Last_L, VLT_L, RLT_L, Jahreswärmebedarf = Daten(filename)
+
     if Bruttofläche_STA == 0:
-        return 0, 0, 0, 0
+        return 0, np.zeros_like(Jahresstunden_L)
     if VS == 0:
-        return 0, 0, 0, 0
+        return 0, np.zeros_like(Jahresstunden_L)
     # statische Vorgabewerte
     # Location = "Bautzen"
     # muss aus der CSV kommen
@@ -209,10 +213,6 @@ def Berechnung_STA(Bruttofläche_STA, VS, Typ, filename):
     Vorwärmung = 8  # K
     DT_WT_Solar = 5
     DT_WT_Netz = 5
-
-    # dynamische Vorgabewerte
-    Jahresstunden_L, Stunde_L, Tag_des_Jahres_L, Einstrahlung_hori_L, \
-        Temperatur_L, Windgeschwindigkeit_L, Last_L, VLT_L, RLT_L, Jahreswärmebedarf = Daten(filename)
 
     K_beam_L, GbT_L, GdT_H_Dk_L = Berechnung_Solarstrahlung(Stunde_L, Tag_des_Jahres_L, Einstrahlung_hori_L, Longitude, STD_Longitude, Latitude, Albedo, IAM_W, IAM_N)
 

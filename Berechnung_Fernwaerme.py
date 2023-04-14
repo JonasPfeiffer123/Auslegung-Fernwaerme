@@ -29,9 +29,6 @@ def Berechnung_Erzeugermix(bruttofläche_STA, vs, Typ, Fläche, Bohrtiefe, P_BMK
     Restwärmebedarf = Jahreswärmebedarf
     WGK_Gesamt = 0
 
-    Wärmemenge_Geothermie = 0
-    Wärmemenge_Abwärme = 0
-    Wärmemenge_AWW = 0
     Strombedarf_WP = 0
     Strommenge_BHKW = 0
     el_Leistung_ges_L = np.zeros_like(Last_L)
@@ -115,7 +112,7 @@ def Berechnung_Erzeugermix(bruttofläche_STA, vs, Typ, Fläche, Bohrtiefe, P_BMK
             data.append(Wärmeleistung_AWW_L)
             colors.append("brown")
 
-            WGK_AWW = WGK_WP(max_Wärmeleistung, Wärmemenge_Abwärme, Strombedarf_Abwärme, tech, 0, Strompreis, q, r, T)
+            WGK_AWW = WGK_WP(max_Wärmeleistung_AWW, Wärmemenge_AWW, Strombedarf_AWW, tech, 0, Strompreis, q, r, T)
             WGK_Gesamt += Wärmemenge_AWW * WGK_AWW
 
             Wärmemengen.append(Wärmemenge_AWW)
