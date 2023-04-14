@@ -35,7 +35,7 @@ Kurzbeschreibungen zu den einzelnen Python-Dateien:
   - liest die CSV mit den Daten ein
   - Daten enthalten Wetterdaten des Standortes sowie Zeitreihe zum Wärmenetz
   - Berechnung der Solarstrahlung und der Solarthermie-Erzeugung nach Scenocalc Fernwärme 2.0 (Excel-Tool, www.scfw.de)
-  - Optimierungsfunktion, welche nach Wärmegestehungskosten optimiert (funktioniert aktuell nicht, da es an anderer Stelle zuletzt signifikante Änderungen gab)
+  - Optimierungsfunktion, welche nach Wärmegestehungskosten optimiert
   
  "Berechnung_Erzeuger.py":
   - Berechnung PV
